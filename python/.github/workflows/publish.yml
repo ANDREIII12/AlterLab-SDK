@@ -1,15 +1,17 @@
-name: Publish to PyPI
+name: Publish Python SDK to PyPI
 
 on:
   release:
     types: [published]
 
+defaults:
+  run:
+    working-directory: python
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      id-token: write  # For trusted publishing
+    if: startsWith(github.ref_name, 'python-v')
 
     steps:
       - uses: actions/checkout@v4
@@ -24,12 +26,10 @@ jobs:
         with:
           version: 1.7.1
 
-      - name: Configure Poetry
-        run: |
-          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-
       - name: Build package
         run: poetry build
 
       - name: Publish to PyPI
         run: poetry publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
